@@ -1,3 +1,5 @@
+#示波器通讯测试
+
 import serial
 import time
 
@@ -61,4 +63,3 @@ finally:
         print("串口已关闭")
 
 
-#test merge

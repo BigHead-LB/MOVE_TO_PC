@@ -33,3 +33,6 @@ def calculate_income_from_tax(tax_due):
 tax_due = 101080  # 假设给定的税款
 income = calculate_income_from_tax(tax_due)
 print(f"反推的收入为: {income}")
+
+
+#input_folder = "C:/Users/Administrator/Desktop/Raptor"  # 替换为你的文件夹路径
