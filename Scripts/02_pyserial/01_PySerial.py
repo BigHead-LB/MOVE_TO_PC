@@ -31,8 +31,6 @@ try:
             print("串口未打开，无法接收数据")
             return None
 
-    # 示例循环：发送并接收
-    # for i in range(1):  # 重复 5 次
     #     send_data(f"SYSTem:AUTO")  # 发送数据
     #     time.sleep(1)  # 延迟 1 秒
     #     receive_data()  # 接收数据
@@ -61,4 +59,4 @@ finally:
     if 'ser' in locals() and ser.is_open:
         ser.close()
         print("串口已关闭")
-#20250328
+#20250410
