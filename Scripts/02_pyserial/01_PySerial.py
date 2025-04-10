@@ -27,6 +27,8 @@ try:
             received = ser.readline().decode('utf-8').strip()  # 接收并解码
             print(f"接收到: {received}")
             return received
+    # 示例循环：发送并接收
+    # for i in range(1):  # 重复 5 次
         else:
             print("串口未打开，无法接收数据")
             return None
