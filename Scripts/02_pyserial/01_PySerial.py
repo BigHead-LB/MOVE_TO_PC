@@ -62,3 +62,4 @@ finally:
         ser.close()
         print("串口已关闭")
 #test ssh statsu
+#hsshhssuhsihaihaha
