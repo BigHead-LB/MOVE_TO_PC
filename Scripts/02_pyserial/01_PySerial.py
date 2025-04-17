@@ -61,4 +61,4 @@ finally:
     if 'ser' in locals() and ser.is_open:
         ser.close()
         print("串口已关闭")
-#test rebase
+#test re
