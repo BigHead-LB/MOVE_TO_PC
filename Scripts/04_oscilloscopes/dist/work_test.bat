@@ -1,0 +1,1 @@
+04_Tektronix_TDS_2024B_Work.exe USB0::0x0699::0x036A::C032490::INSTR 1,2

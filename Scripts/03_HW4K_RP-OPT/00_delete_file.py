@@ -1,50 +1,83 @@
-#20250506
-#delete file
+# 20250704 delete file
+# Method 1: delete specific files
+#   python delete_files.py E:\TestFolder A.csv,B.txt,C.log
+
+# Method 2: delete all files/folders
+#   python delete_files.py E:\TestFolder
 
 import os
 import shutil
 import sys
+import stat
+import io
 
+# Fix encoding issues for special characters in Windows terminal
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+def handle_remove_readonly(func, path, exc_info):
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+def is_drive_root(path):
+    path = os.path.abspath(path.rstrip("\\/"))
+    drive, tail = os.path.splitdrive(path)
+    return tail == ''
 
 def delete_files_and_folders(path):
-    # 检查路径是否存在
-    if not os.path.exists(path):
-        print(f"错误: 路径 {path} 不存在！")
-        return
+    path = os.path.abspath(path)
+    is_root = is_drive_root(path)
+    print(f"Deleting {'root directory contents' if is_root else 'entire directory'}: {path}")
 
-    # 遍历目录中的所有内容
     for root, dirs, files in os.walk(path, topdown=False):
-        # 删除所有文件
         for file in files:
             file_path = os.path.join(root, file)
             try:
                 os.remove(file_path)
-                print(f"已删除文件: {file_path}")
+                print(f"Deleted file: {file_path}")
             except Exception as e:
-                print(f"删除文件 {file_path} 失败: {e}")
+                print(f"Failed to delete file: {file_path} ({type(e).__name__}: {e})")
 
-        # 删除所有子目录
         for dir in dirs:
             dir_path = os.path.join(root, dir)
             try:
-                shutil.rmtree(dir_path)
-                print(f"已删除文件夹: {dir_path}")
+                shutil.rmtree(dir_path, onerror=handle_remove_readonly)
+                print(f"Deleted folder: {dir_path}")
             except Exception as e:
-                print(f"删除文件夹 {dir_path} 失败: {e}")
+                print(f"Failed to delete folder: {dir_path} ({type(e).__name__}: {e})")
 
-    # 最后删除指定的根目录（如果需要）
-    try:
-        shutil.rmtree(path)
-        print(f"已删除根目录: {path}")
-    except Exception as e:
-        print(f"删除根目录 {path} 失败: {e}")
-
-
-# 主函数：从命令行获取路径参数
-if __name__ == "__main__":
-    # 检查是否提供了路径参数
-    if len(sys.argv) != 2:
-        print("用法: python delete_files.py <目录路径>")
+    if not is_root:
+        try:
+            shutil.rmtree(path, onerror=handle_remove_readonly)
+            print(f"Deleted root directory: {path}")
+        except Exception as e:
+            print(f"Failed to delete root directory: {path} ({type(e).__name__}: {e})")
     else:
-        folder_path = sys.argv[1]  # 获取命令行传入的路径
-        delete_files_and_folders(folder_path)
+        print(f"Cleared contents of root directory (directory itself kept): {path}")
+
+def delete_specific_files(path, file_list):
+    path = os.path.abspath(path)
+    for file_name in file_list:
+        file_path = os.path.join(path, file_name)
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+                print(f"Deleted specific file: {file_path}")
+            except Exception as e:
+                print(f"Failed to delete file: {file_path} ({type(e).__name__}: {e})")
+        else:
+            print(f"File not found: {file_path}")
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python delete_files.py <directory_path> [file1,file2,...]")
+    else:
+        folder_path = sys.argv[1]
+        if not os.path.exists(folder_path):
+            print(f"Error: Path does not exist: {folder_path}")
+        elif len(sys.argv) == 3:
+            # Delete specific files
+            file_names = sys.argv[2].split(',')
+            delete_specific_files(folder_path, file_names)
+        else:
+            # Delete all contents in the directory
+            delete_files_and_folders(folder_path)

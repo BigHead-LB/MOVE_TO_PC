@@ -1,0 +1,30 @@
+VISA address: USB0::0x0699::0x036A::C032490::INSTR
+Channels to measure: [1, 2]
+
+Initializing channel CH1 ...
+Channel 1 probe attenuation: 1.0E1
+Channel 1 vertical scale: 5.0E-1 V/div
+Starting measurement on channel CH1 ...
+
+Initializing channel CH2 ...
+Channel 2 probe attenuation: 1.0E1
+Channel 2 vertical scale: 5.0E-1 V/div
+Starting measurement on channel CH2 ...
+
+======= Final Measurement Results =======
+
+Channel 1 Measurements:
+Mean Voltage: 0.009 V
+Frequency: 98999999999999993426744560981400092672.000 Hz
+Peak-to-Peak: 0.060 V
+RMS Voltage: 0.060 V
+Maximum Voltage: 0.040 V
+Minimum Voltage: -0.020 V
+
+Channel 2 Measurements:
+Mean Voltage: 0.006 V
+Frequency: 500000.000 Hz
+Peak-to-Peak: 0.060 V
+RMS Voltage: 0.080 V
+Maximum Voltage: 0.060 V
+Minimum Voltage: -0.020 V
