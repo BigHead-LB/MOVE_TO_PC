@@ -12,7 +12,8 @@ import stat
 import io
 
 # Fix encoding issues for special characters in Windows terminal
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+if sys.stdout is not None and hasattr(sys.stdout, "buffer"):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 def handle_remove_readonly(func, path, exc_info):
     os.chmod(path, stat.S_IWRITE)

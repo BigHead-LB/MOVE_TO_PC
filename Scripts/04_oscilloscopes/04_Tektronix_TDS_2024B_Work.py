@@ -16,6 +16,7 @@ def safe_query_str(instr, command):
     except Exception:
         return None
 
+
 def initialize_channel(instr, ch):
     try:
         instr.write(f"SELECT:CH{ch} ON")
