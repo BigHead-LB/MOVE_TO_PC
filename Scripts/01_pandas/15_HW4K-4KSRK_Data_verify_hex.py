@@ -1,13 +1,17 @@
-#20251125
-#check the csv file
-#verify A.csv and B.csv, begin line5: memory address A-B value same or not
-#example:
-#python compare.py C:/base/pd_gamma.csv C:/daily/20251120 pd_gamma.csv C:/output 0x00000000 0x00017FFF
-
 import os
 import glob
 import pandas as pd
-import sys
+import configparser
+
+# 自动读取脚本同目录的 config.ini
+script_dir = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(script_dir, "config.ini")
+
+cfg = configparser.ConfigParser(inline_comment_prefixes=(';', '#'))
+read_files = cfg.read(config_path, encoding="utf-8")
+if not read_files:
+    print(f"ERROR: config.ini not found at {config_path}")
+    exit(1)
 
 
 def load_hex_dump(path):
@@ -16,35 +20,28 @@ def load_hex_dump(path):
         lines = f.readlines()
 
     data = {}
-
-    # Data begins at line index 4 (line 5). First 4 lines are header/info.
-    for line in lines[4:]:
+    for line in lines[4:]:  # skip first 4 header lines
         line = line.strip()
         if not line:
             continue
-
         parts = line.split(",")
-
-        row_addr = int(parts[0], 16)            # Example: 0x00000040
+        row_addr = int(parts[0], 16)
         bytes_16 = [int(x, 16) for x in parts[1:17]]
-
         data[row_addr] = bytes_16
-
     return data
 
 
 def get_byte(data, addr):
-    """Return the byte value for the absolute address."""
-    row = addr & 0xFFFFFFF0    # row base address (16 bytes aligned)
-    col = addr & 0x0F          # column offset 0–15
-
+    """Return the byte at absolute address."""
+    row = addr & 0xFFFFFFF0
+    col = addr & 0x0F
     if row in data:
         return data[row][col]
     return None
 
 
 def compare_range(base_data, target_data, start_addr, end_addr):
-    """Compare two memory tables in the given address range."""
+    """Compare two memory dumps in the given address range (inclusive)."""
     for addr in range(start_addr, end_addr + 1):
         b = get_byte(base_data, addr)
         t = get_byte(target_data, addr)
@@ -54,61 +51,99 @@ def compare_range(base_data, target_data, start_addr, end_addr):
 
 
 # ======================
-# Main Program
+# 遍历所有 section
 # ======================
-if len(sys.argv) != 7:
-    print("Usage: python compare.py <base_file> <target_path> <target_file> <output_dir> <addr_start> <addr_end>")
-    print("Example: python compare.py C:/base/base.csv C:/daily pd_gamma.csv C:/out 0x0000024D 0x0000194E")
-    sys.exit(1)
+global_results = []
+final_status = "OK"
+same_folders = []  # 记录出现 same 的文件夹
 
-base_file = os.path.normpath(sys.argv[1])
-target_path = os.path.normpath(sys.argv[2])
-target_file = sys.argv[3]
-output_dir = os.path.normpath(sys.argv[4])
-
-try:
-    addr_start = int(sys.argv[5], 16)   # hex address
-    addr_end = int(sys.argv[6], 16)
-except:
-    print("Address must be hex format, example: 0x0000024D")
-    sys.exit(1)
-
-# Output files
-os.makedirs(output_dir, exist_ok=True)
-csv_output = os.path.join(output_dir, "compare_result.csv")
-txt_output = os.path.join(output_dir, "compare_result.txt")
-
-# Load base memory dump
-base_data = load_hex_dump(base_file)
-
-results = []
-
-# Search target files
-file_list = glob.glob(os.path.join(target_path, "**", target_file), recursive=True)
-
-for file_path in file_list:
-    folder_name = os.path.basename(os.path.dirname(file_path))
-
+for section in cfg.sections():
+    print(f"\nProcessing section: [{section}]")
     try:
-        target_data = load_hex_dump(file_path)
-        result = compare_range(base_data, target_data, addr_start, addr_end)
+        base_file = os.path.normpath(cfg[section]["base_file"])
+        target_file = cfg[section]["target_file"]
+        output_dir = os.path.normpath(cfg[section]["output_dir"])
+        target_path = os.path.normpath(cfg[section].get("target_path", cfg["DEFAULT"]["target_path"]))
+        addr_start = int(cfg[section]["start_line"], 16)
+        addr_end = int(cfg[section]["end_line"], 16)
     except Exception as e:
-        result = f"error: {e}"
+        print(f"ERROR reading config for section [{section}]: {e}")
+        final_status = "NG"
+        continue
 
-    results.append({
-        "folder": folder_name,
-        "addr_range": f"{sys.argv[5]} - {sys.argv[6]}",
-        "result": result
-    })
+    os.makedirs(output_dir, exist_ok=True)
+    csv_output = os.path.join(output_dir, "compare_result.csv")
+    txt_output = os.path.join(output_dir, "compare_result.txt")
 
-# Save CSV
-pd.DataFrame(results).to_csv(csv_output, index=False, encoding="utf-8-sig")
+    # 读取 base 文件
+    try:
+        base_data = load_hex_dump(base_file)
+    except Exception as e:
+        print(f"ERROR reading base file for [{section}]: {e}")
+        final_status = "NG"
+        continue
 
-# Save TXT
-with open(txt_output, "w", encoding="utf-8-sig") as f:
-    for r in results:
-        f.write(f"{r['folder']} | {r['addr_range']} | {r['result']}\n")
+    results = []
 
-print(f"Done!")
-print(f"CSV saved to: {csv_output}")
-print(f"TXT saved to: {txt_output}")
+    # 搜索目标文件
+    file_list = glob.glob(os.path.join(target_path, "**", target_file), recursive=True)
+    if not file_list:
+        print(f"ERROR: Target file for [{section}] not found!")
+        final_status = "NG"
+        continue
+
+    for file_path in file_list:
+        folder_name = os.path.basename(os.path.dirname(file_path))
+        try:
+            target_data = load_hex_dump(file_path)
+            result = compare_range(base_data, target_data, addr_start, addr_end)
+        except Exception as e:
+            result = f"error: {e}"
+            final_status = "NG"
+
+        results.append({
+            "folder": folder_name,
+            "addr_range": f"{hex(addr_start)} - {hex(addr_end)}",
+            "result": result
+        })
+
+        # 如果出现 same → NG，并记录文件夹
+        if result == "same":
+            final_status = "NG"
+            same_folders.append(f"[{section}] {folder_name}")
+
+        global_results.append({
+            "section": section,
+            "folder": folder_name,
+            "result": result
+        })
+
+    # 保存 CSV
+    pd.DataFrame(results).to_csv(csv_output, index=False, encoding="utf-8-sig")
+
+    # 保存 TXT
+    with open(txt_output, "w", encoding="utf-8-sig") as f:
+        for r in results:
+            f.write(f"{r['folder']} | {r['addr_range']} | {r['result']}\n")
+
+    print(f"Done section [{section}] - CSV: {csv_output}, TXT: {txt_output}")
+
+
+# ======================
+# 最终汇总
+# ======================
+final_summary_file = os.path.join(script_dir, "final_summary.txt")
+with open(final_summary_file, "w", encoding="utf-8-sig") as f:
+    f.write(f"FINAL RESULT: {final_status}\n")
+    if same_folders:
+        f.write("Folders with SAME result:\n")
+        for sf in same_folders:
+            f.write(f"{sf}\n")
+
+print(f"\nFINAL RESULT: {final_status}")
+if same_folders:
+    print("Folders with SAME result:")
+    for sf in same_folders:
+        print(sf)
+
+print("All sections processed!")

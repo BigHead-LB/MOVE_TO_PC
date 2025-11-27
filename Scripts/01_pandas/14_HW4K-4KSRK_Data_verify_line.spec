@@ -5,7 +5,7 @@ a = Analysis(
     ['14_HW4K-4KSRK_Data_verify_line.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('config.ini', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
