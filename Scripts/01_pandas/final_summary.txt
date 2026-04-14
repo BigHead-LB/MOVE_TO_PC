@@ -1,0 +1,4 @@
+﻿FINAL RESULT: NG
+Folders with SAME result:
+pd_gamma_24P -> 3000276
+pd_ugm_24P -> 3000276

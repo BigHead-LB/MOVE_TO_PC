@@ -1,3 +1,17 @@
+#20251201
+#compare the memory data .suit for pd_slc,pd_gamma,pd_ugm,pd_uf, other also ok
+#if each one file ,some target file => same           => final_summary.txt NG
+#if each one file ,all  target file => different      => final_summary.txt OK
+
+# parameter
+#check file path:    target_path = C:/Users/Administrator/Desktop/data_verift_test/3000276
+#verify file path:   base_file = C:/Users/Administrator/Desktop/data_verift_test/Data_for_ADJ_Data_Check/pd_slc.csv
+#checking file:      target_file = pd_slc.csv
+#log file path:      output_dir = C:/Users/Administrator/Desktop/Gamma_compare/pd_slc_60P
+#begin index:        start_line = 0x00000000
+#end index:          end_line = 0x000017FF
+
+
 import os
 import glob
 import pandas as pd

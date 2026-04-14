@@ -2,8 +2,8 @@ import os
 import glob
 import pandas as pd
 
-base_file = r"C:\Users\Administrator\Desktop\XW5000_initial\pd_gamma.csv"
-root_dir = r"E:\7000"
+base_file = r"C:\Users\Administrator\Desktop\XW5100_initial\pd_gamma.csv"
+root_dir = r"C:\Users\Administrator\Desktop\daily_check\daily_check\20251202"
 
 # 保存结果的文件夹
 output_dir = r"C:\Users\Administrator\Desktop\Gamma_compare"
