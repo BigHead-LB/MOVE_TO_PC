@@ -1,0 +1,22 @@
+# 必须放在最顶层，且值要和你代码报错里提示的一模一样
+model_name: "PP-LCNet_x1_0_textline_ori"
+
+Global:
+  algorithm: "Cls"
+  use_gpu: false
+  # ... 其他原有参数保留
+
+Model:
+  model_filename: "inference.pdmodel"
+  params_filename: "inference.pdiparams"
+
+PreProcess:
+  transform_ops:
+    - ClsResize:
+        image_shape: [3, 48, 192]
+    - NormalizeImage:
+        scale: 1./255.
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
+        order: hwc
+    - ToCHWImage:
