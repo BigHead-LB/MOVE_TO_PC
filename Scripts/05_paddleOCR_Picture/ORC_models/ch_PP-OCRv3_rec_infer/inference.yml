@@ -1,0 +1,18 @@
+# 1. 这一行必须置顶、不缩进。识别模型在新版中通常与检测模型共享这个指纹标识
+model_name: "PP-LCNet_x1_0_doc_ori"
+
+# 2. 下面绝对不要再出现 model_name 这个单词了
+Model:
+  model_filename: "inference.pdmodel"
+  params_filename: "inference.pdiparams"
+
+PreProcess:
+  transform_ops:
+  - RecResizeImg:
+      image_shape: [3, 48, 320]
+  - NormalizeImage:
+      scale: 1./255.
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+      order: hwc
+  - ToCHWImage:

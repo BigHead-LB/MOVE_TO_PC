@@ -3,10 +3,10 @@ import glob
 import pandas as pd
 
 base_file = r"C:\Users\Administrator\Desktop\XW5100_initial\pd_gamma.csv"
-root_dir = r"C:\Users\Administrator\Desktop\daily_check\daily_check\20251202"
+root_dir = r"C:\Users\Administrator\Desktop\gamma check\5650040"
 
 # 保存结果的文件夹
-output_dir = r"C:\Users\Administrator\Desktop\Gamma_compare"
+output_dir = r"C:\Users\Administrator\Desktop\gamma check"
 os.makedirs(output_dir, exist_ok=True)  # 如果目录不存在就创建
 
 output_file = os.path.join(output_dir, "compare_result_24P.xlsx")
